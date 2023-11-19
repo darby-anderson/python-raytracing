@@ -1,0 +1,14 @@
+# Python environments
+.venv/
+venv/
+
+# Python compiled
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyCharm IDE
+.idea
+
+# ppts
+.pptx
