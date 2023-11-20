@@ -19,7 +19,8 @@ if __name__ == '__main__':
 
     mesh = Mesh.from_stl("unit_cube.stl", np.array([1.0, 0.0, 1.0]),\
         np.array([1.0, 1.0, 1.0]),0.05,1.0,0.2,100)
-    mesh.transform.set_rotation(-15, 0, 200)
+    # mesh.transform.set_rotation(-15, 0, 200)
+    mesh.transform.set_position(0, 5, 0)
 
     light = PointLight(50.0, np.array([1, 1, 1]))
     light.transform.set_position(0, -5, 5)

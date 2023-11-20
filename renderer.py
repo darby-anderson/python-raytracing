@@ -30,6 +30,8 @@ class Renderer:
 
                 curr_ray: Ray = self.camera.get_cam_space_ray_at_pixel(x, y, self.screen.width, self.screen.width, 1)
 
+                # print(f"ray for x: {x} y: {y} is ray with dir: {str(curr_ray.direction)} at origin: {str(curr_ray.origin)}")
+
                 # check every triangle in scene
                 for mesh in self.meshes:
                     for face_index, face in enumerate(mesh.faces):

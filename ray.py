@@ -11,4 +11,3 @@ class Ray:
     def normalize(self):
         normalized_dir = math_helper.get_normalized(self.direction.np_array)
         self.direction = Vector3(normalized_dir[0], normalized_dir[1], normalized_dir[2])
-

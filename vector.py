@@ -10,6 +10,9 @@ class Vector3:
 
         self.np_array = np.array([x, y, z])
 
+    def __str__(self):
+        return str(self.np_array)
+
     @staticmethod
     def from_np_array(array: np.array) -> "Vector3":
         return Vector3(array[0], array[1], array[2])
