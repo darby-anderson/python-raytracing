@@ -48,6 +48,8 @@ class Renderer:
 
                             s_vert = self.camera.project_point(w_vert)
                             screen_space_vertices.append(Vector3.from_np_array(s_vert))
+                            print()
+
 
                         if math_helper.ray_triangle_intersection(curr_ray,
                                                                  screen_space_vertices[0],

@@ -100,24 +100,29 @@ def get_2d_barycentric_coords(p: np.array, a: np.array, b: np.array, c: np.array
 
 def ray_triangle_intersection(ray: Ray, a_point: Vector3, b_point: Vector3, c_point: Vector3, t0: float, t1: float) -> bool:
 
-    a = a_point.x - b_point.x
-    b = a_point.y - b_point.y
-    c = a_point.z - b_point.z
-    d = a_point.x - c_point.x
-    e = a_point.y - c_point.y
-    f = a_point.z - c_point.z
-    g = ray.direction.x
-    h = ray.direction.y
-    i = ray.direction.z
-    j = a_point.x - ray.origin.x
-    k = a_point.y - ray.origin.y
-    l = a_point.z - ray.origin.z
+    EPSILON = 0.00001
+
+    a = a_point.x - b_point.x  # c
+    b = a_point.y - b_point.y  # c
+    c = a_point.z - b_point.z  # c
+    d = a_point.x - c_point.x  # c
+    e = a_point.y - c_point.y  # c
+    f = a_point.z - c_point.z  # c
+    g = ray.direction.x  # c
+    h = ray.direction.y  # c
+    i = ray.direction.z  # c
+    j = a_point.x - ray.origin.x  # c
+    k = a_point.y - ray.origin.y  # c
+    l = a_point.z - ray.origin.z  # c
 
     ei_minus_hf = e*i - h*f
     gf_minus_di = g*f - d*i
     dh_minus_eg = d*h - e*g
 
     M = a*ei_minus_hf + b*gf_minus_di + c*dh_minus_eg
+
+    if abs(M) < EPSILON:
+        return False
 
     ak_minus_jb = a*k - j*b
     jc_minus_al = j*c - a*l
@@ -135,7 +140,7 @@ def ray_triangle_intersection(ray: Ray, a_point: Vector3, b_point: Vector3, c_po
 
     beta = (j*ei_minus_hf + k*gf_minus_di + l*dh_minus_eg) / M
 
-    if beta < 0 or beta > 1:
+    if beta < 0 or beta > (1 - theta):
         return False
 
     return True

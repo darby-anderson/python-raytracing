@@ -2,6 +2,7 @@ import numpy as np
 from vector import Vector3
 import math_helper
 
+
 class Ray:
 
     def __init__(self, origin: np.array, direction: np.array):

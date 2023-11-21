@@ -8,7 +8,7 @@ class Vector3:
         self.y = y
         self.z = z
 
-        self.np_array = np.array([x, y, z])
+        self.np_array = np.array([x, y, z], float)
 
     def __str__(self):
         return str(self.np_array)
