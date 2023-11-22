@@ -1,7 +1,7 @@
 import numpy as np
 
 from ray import Ray
-from vector import Vector3
+
 
 def dot(v1: np.array, v2: np.array) -> np.array:
     return np.dot(v1, v2)
@@ -98,22 +98,42 @@ def get_2d_barycentric_coords(p: np.array, a: np.array, b: np.array, c: np.array
     return np.array([alpha, beta, gamma])
 
 
-def ray_triangle_intersection(ray: Ray, a_point: Vector3, b_point: Vector3, c_point: Vector3, t0: float, t1: float) -> bool:
+def ray_triangle_intersection(ray: Ray, a_point: np.array, b_point: np.array, c_point: np.array, t0: float, t1: float) -> bool:
 
     EPSILON = 0.00001
 
-    a = a_point.x - b_point.x  # c
-    b = a_point.y - b_point.y  # c
-    c = a_point.z - b_point.z  # c
-    d = a_point.x - c_point.x  # c
-    e = a_point.y - c_point.y  # c
-    f = a_point.z - c_point.z  # c
-    g = ray.direction.x  # c
-    h = ray.direction.y  # c
-    i = ray.direction.z  # c
-    j = a_point.x - ray.origin.x  # c
-    k = a_point.y - ray.origin.y  # c
-    l = a_point.z - ray.origin.z  # c
+    a_point_x = a_point[0]
+    a_point_y = a_point[1]
+    a_point_z = a_point[1]
+
+    b_point_x = b_point[0]
+    b_point_y = b_point[1]
+    b_point_z = b_point[2]
+
+    c_point_x = c_point[0]
+    c_point_y = c_point[1]
+    c_point_z = c_point[2]
+
+    ray_origin_x = ray.origin[0]
+    ray_origin_y = ray.origin[1]
+    ray_origin_z = ray.origin[2]
+
+    ray_direction_x = ray.direction[0]
+    ray_direction_y = ray.direction[1]
+    ray_direction_z = ray.direction[2]
+
+    a = a_point_x - b_point_x  # c
+    b = a_point_y - b_point_y  # c
+    c = a_point_z - b_point_z  # c
+    d = a_point_x - c_point_x  # c
+    e = a_point_y - c_point_y  # c
+    f = a_point_z - c_point_z  # c
+    g = ray_direction_x  # c
+    h = ray_direction_y  # c
+    i = ray_direction_z  # c
+    j = a_point_x - ray_origin_x  # c
+    k = a_point_y - ray_origin_y  # c
+    l = a_point_z - ray_origin_z  # c
 
     ei_minus_hf = e*i - h*f
     gf_minus_di = g*f - d*i

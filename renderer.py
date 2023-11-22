@@ -6,7 +6,6 @@ from camera import PerspectiveCamera, OrthoCamera
 
 import numpy as np
 import math_helper
-from vector import Vector3
 
 
 class Renderer:
@@ -29,7 +28,6 @@ class Renderer:
             for y in range(0, self.screen.height):
 
                 curr_ray: Ray = self.camera.get_cam_space_ray_at_pixel(x, y, self.screen.width, self.screen.width, 1)
-                curr_ray_w: Ray = self.camera.project_ray(curr_ray)
 
                 # print(f"ray for x: {x} y: {y} is ray with dir: {str(curr_ray.direction)} at origin: {str(curr_ray.origin)}")
 
@@ -38,23 +36,22 @@ class Renderer:
                     for face_index, face in enumerate(mesh.faces):
                         face_normal = mesh.normals[face_index]
 
-                        # DO THIS IN WORLD SPACE
+                        # let's try to do this in camera space to avoid ray -> world space complications
 
                         world_space_vertices: list = []
-                        # screen_space_vertices: list = []
+                        camera_space_vertices: list = []
 
                         for index in face:
                             w_vert = mesh.transform.apply_to_point(mesh.verts[index])
-                            world_space_vertices.append(Vector3.from_np_array(w_vert))
+                            world_space_vertices.append(w_vert)
 
-                            # s_vert = self.camera.project_point(w_vert)
-                            # screen_space_vertices.append(Vector3.from_np_array(s_vert))
-                            # print()
+                            c_vert = self.camera.project_point(w_vert)
+                            camera_space_vertices.append(c_vert)
 
-                        if math_helper.ray_triangle_intersection(curr_ray_w,
-                                                                 world_space_vertices[0],
-                                                                 world_space_vertices[1],
-                                                                 world_space_vertices[2],
+                        if math_helper.ray_triangle_intersection(curr_ray,
+                                                                 camera_space_vertices[0],
+                                                                 camera_space_vertices[1],
+                                                                 camera_space_vertices[2],
                                                                  0, 10000):
                             print("hit!")
                             image_buffer[x, y] = (255, 0, 0)
