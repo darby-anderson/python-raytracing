@@ -6,7 +6,6 @@ from camera import PerspectiveCamera, OrthoCamera
 
 import numpy as np
 import math_helper
-from vector import Vector3
 
 
 class Renderer:
@@ -40,22 +39,20 @@ class Renderer:
                         # let's try to do this in camera space to avoid ray -> world space complications
 
                         world_space_vertices: list = []
-                        screen_space_vertices: list = []
+                        camera_space_vertices: list = []
 
                         for index in face:
                             w_vert = mesh.transform.apply_to_point(mesh.verts[index])
-                            world_space_vertices.append(Vector3.from_np_array(w_vert))
+                            world_space_vertices.append(w_vert)
 
-                            s_vert = self.camera.project_point(w_vert)
-                            screen_space_vertices.append(Vector3.from_np_array(s_vert))
-                            # print()
-
+                            c_vert = self.camera.project_point(w_vert)
+                            camera_space_vertices.append(c_vert)
 
                         if math_helper.ray_triangle_intersection(curr_ray,
-                                                                 screen_space_vertices[0],
-                                                                 screen_space_vertices[1],
-                                                                 screen_space_vertices[2],
-                                                                 -1, 10000):
+                                                                 camera_space_vertices[0],
+                                                                 camera_space_vertices[1],
+                                                                 camera_space_vertices[2],
+                                                                 0, 10000):
                             print("hit!")
                             image_buffer[x, y] = (255, 0, 0)
 

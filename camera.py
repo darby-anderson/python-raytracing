@@ -6,7 +6,6 @@ import math_helper
 from projections import OrthographicProjection, PerspectiveProjection
 from ray import Ray
 from transform import Transform
-from vector import Vector3
 
 
 class OrthoCamera:
@@ -28,25 +27,25 @@ class OrthoCamera:
         return self._ratio
 
     def project_point(self, p) -> np.array:
-        p = self.transform.apply_inverse_to_point(p)
-        return self.orthographic_projection.apply_to_point(p)
+        return self.transform.apply_inverse_to_point(p)
+        # return self.orthographic_projection.apply_to_point(p)
 
     def inverse_project_point(self, p) -> np.array:
-        p = self.orthographic_projection.apply_inverse_to_point(p)
-        p = self.transform.apply_to_point(p)
-        return p
+        # p = self.orthographic_projection.apply_inverse_to_point(p)
+        return self.transform.apply_to_point(p)
+        # return p
 
     def project_ray(self, ray: Ray) -> Ray:
-        direction_np = self.project_point(ray.direction)
-        origin_np = self.project_point(ray.origin)
+        origin = self.project_point(ray.origin)
+        direction = self.project_point(ray.direction)
 
-        return Ray(Vector3.from_np_array(origin_np), Vector3.from_np_array(direction_np))
+        return Ray(origin, direction)
 
     def inverse_project_ray(self, ray: Ray) -> Ray:
-        direction_np = self.inverse_project_point(ray.direction)
-        origin_np = self.inverse_project_point(ray.origin)
+        direction = self.inverse_project_point(ray.direction)
+        origin = self.inverse_project_point(ray.origin)
 
-        return Ray(Vector3.from_np_array(origin_np), Vector3.from_np_array(direction_np))
+        return Ray(origin, direction)
 
     def get_cam_space_ray_at_pixel(self, pixel_i: int, pixel_j: int, pixel_width: int, pixel_height: int, focal_distance: int) -> Ray:
         u = self.left + (self.right - self.left) * (pixel_i + 0.5) / pixel_width
@@ -92,16 +91,16 @@ class PerspectiveCamera:
         return p
 
     def project_ray(self, ray: Ray) -> Ray:
-        direction_np = self.project_point(ray.direction)
-        origin_np = self.project_point(ray.origin)
+        direction = self.project_point(ray.direction)
+        origin = self.project_point(ray.origin)
 
-        return Ray(Vector3.from_np_array(origin_np), Vector3.from_np_array(direction_np))
+        return Ray(origin, direction)
 
     def inverse_project_ray(self, ray: Ray) -> Ray:
-        direction_np = self.inverse_project_point(ray.direction)
-        origin_np = self.inverse_project_point(ray.origin)
+        direction = self.inverse_project_point(ray.direction)
+        origin = self.inverse_project_point(ray.origin)
 
-        return Ray(Vector3.from_np_array(origin_np), Vector3.from_np_array(direction_np))
+        return Ray(origin, direction)
 
     def get_cam_space_ray_at_pixel(self, pixel_i: int, pixel_j: int, pixel_width: int, pixel_height: int, focal_distance: int) -> Ray:
         u = self.left + (self.right - self.left) * (pixel_i + 0.5) / pixel_width
