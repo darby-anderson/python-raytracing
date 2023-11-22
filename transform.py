@@ -70,7 +70,7 @@ class Transform:
         a_p: np.array = np.append(p, 1)
         return math_helper.multiply_matrices(self.matrix, a_p)[0:3]
     
-    def apply_inverse_to_point(self, p) -> np.array:
+    def apply_inverse_to_point(self, p: np.array) -> np.array:
         a_p: np.array = np.append(p, 1)
         # 4x4 times 4x1 -> 4x1 -> 3x1
         return math_helper.multiply_matrices(self.inverse_matrix(), a_p)[0:3]
