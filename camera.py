@@ -28,22 +28,19 @@ class OrthoCamera:
 
     def project_point(self, p) -> np.array:
         return self.transform.apply_inverse_to_point(p)
-        # return self.orthographic_projection.apply_to_point(p)
 
     def inverse_project_point(self, p) -> np.array:
-        # p = self.orthographic_projection.apply_inverse_to_point(p)
         return self.transform.apply_to_point(p)
-        # return p
 
     def project_ray(self, ray: Ray) -> Ray:
-        origin = self.project_point(ray.origin)
-        direction = self.project_point(ray.direction)
+        direction = self.transform.apply_inverse_to_normal(ray.direction)
+        origin = self.transform.apply_inverse_to_point(ray.origin)
 
         return Ray(origin, direction)
 
     def inverse_project_ray(self, ray: Ray) -> Ray:
-        direction = self.inverse_project_point(ray.direction)
-        origin = self.inverse_project_point(ray.origin)
+        direction = self.transform.apply_to_normal(ray.direction)
+        origin = self.transform.apply_to_point(ray.origin)
 
         return Ray(origin, direction)
 
@@ -79,26 +76,20 @@ class PerspectiveCamera:
         return self._ratio
 
     def project_point(self, p) -> np.array:
-        p = self.transform.apply_inverse_to_point(p)
-        p = self.perspective_projection.apply_to_point(p)
-        p = self.orthographic_projection.apply_to_point(p)
-        return p[0:3]
+        return self.transform.apply_inverse_to_point(p)
 
     def inverse_project_point(self, p) -> np.array:
-        p = self.orthographic_projection.apply_inverse_to_point(p)
-        p = self.perspective_projection.apply_inverse_to_point(p)
-        p = self.transform.apply_to_point(p)
-        return p
+        return self.transform.apply_to_point(p)
 
     def project_ray(self, ray: Ray) -> Ray:
-        direction = self.project_point(ray.direction)
-        origin = self.project_point(ray.origin)
+        direction = self.transform.apply_inverse_to_normal(ray.direction)
+        origin = self.transform.apply_inverse_to_point(ray.origin)
 
         return Ray(origin, direction)
 
     def inverse_project_ray(self, ray: Ray) -> Ray:
-        direction = self.inverse_project_point(ray.direction)
-        origin = self.inverse_project_point(ray.origin)
+        direction = self.transform.apply_to_normal(ray.direction)
+        origin = self.transform.apply_to_point(ray.origin)
 
         return Ray(origin, direction)
 
