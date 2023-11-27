@@ -11,9 +11,6 @@ class Screen:
 
         self.surface = pygame.display.set_mode([width, height])
 
-        array_shape = (width, height, 3)
-        self.color_array = np.zeros(array_shape)
-
     def ratio(self):
         return self.width / self.height
 

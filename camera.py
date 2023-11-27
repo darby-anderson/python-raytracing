@@ -27,20 +27,28 @@ class OrthoCamera:
         return self._ratio
 
     def project_point(self, p) -> np.array:
-        return self.transform.apply_inverse_to_point(p)
+        p = self.transform.apply_inverse_to_point(p)
+        return p # self.orthographic_projection.apply_to_point(p)
 
     def inverse_project_point(self, p) -> np.array:
+        # p = self.orthographic_projection.apply_inverse_to_point(p)
         return self.transform.apply_to_point(p)
 
     def project_ray(self, ray: Ray) -> Ray:
         direction = self.transform.apply_inverse_to_normal(ray.direction)
         origin = self.transform.apply_inverse_to_point(ray.origin)
 
+        # direction = self.inverse_project_point(ray.direction)
+        # origin = self.inverse_project_point(ray.origin)
+
         return Ray(origin, direction)
 
     def inverse_project_ray(self, ray: Ray) -> Ray:
         direction = self.transform.apply_to_normal(ray.direction)
         origin = self.transform.apply_to_point(ray.origin)
+
+        # direction = self.project_point(ray.direction)
+        # origin = self.project_point(ray.origin)
 
         return Ray(origin, direction)
 

@@ -1,6 +1,7 @@
 import numpy as np
 
 from ray import Ray
+from ray_triangle_intersection_result import RayTriangleIntersectionResult
 
 
 def dot(v1: np.array, v2: np.array) -> np.array:
@@ -98,13 +99,13 @@ def get_2d_barycentric_coords(p: np.array, a: np.array, b: np.array, c: np.array
     return np.array([alpha, beta, gamma])
 
 
-def ray_triangle_intersection(ray: Ray, a_point: np.array, b_point: np.array, c_point: np.array, t0: float, t1: float) -> bool:
+def ray_triangle_intersection(ray: Ray, a_point: np.array, b_point: np.array, c_point: np.array, t0: float, t1: float) -> RayTriangleIntersectionResult:
 
     EPSILON = 0.00001
 
     a_point_x = a_point[0]
     a_point_y = a_point[1]
-    a_point_z = a_point[1]
+    a_point_z = a_point[2]
 
     b_point_x = b_point[0]
     b_point_y = b_point[1]
@@ -142,7 +143,7 @@ def ray_triangle_intersection(ray: Ray, a_point: np.array, b_point: np.array, c_
     M = a*ei_minus_hf + b*gf_minus_di + c*dh_minus_eg
 
     if abs(M) < EPSILON:
-        return False
+        return RayTriangleIntersectionResult(False, 0, 0, 0)
 
     ak_minus_jb = a*k - j*b
     jc_minus_al = j*c - a*l
@@ -151,16 +152,106 @@ def ray_triangle_intersection(ray: Ray, a_point: np.array, b_point: np.array, c_
     t = -(f*ak_minus_jb + e*jc_minus_al + d*bl_minus_kc) / M
 
     if t < t0 or t > t1:
-        return False
+        return RayTriangleIntersectionResult(False, 0, 0, 0)
 
     theta = (i*ak_minus_jb + h*jc_minus_al + g*bl_minus_kc) / M
 
     if theta < 0 or theta > 1:
-        return False
+        return RayTriangleIntersectionResult(False, 0, 0, 0)
 
     beta = (j*ei_minus_hf + k*gf_minus_di + l*dh_minus_eg) / M
 
     if beta < 0 or beta > (1 - theta):
-        return False
+        return RayTriangleIntersectionResult(False, 0, 0, 0)
+
+    return RayTriangleIntersectionResult(True, t, theta, beta)
+
+"""
+def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np.array) -> bool:
+    t_min = float('-inf')
+    t_max = float('inf')
+
+    for i in range(3):
+        inverse_dir = 1.0 / ray.direction[i]
+        origin = ray.origin[i]
+
+        t0 = (min_aabb_point[i] - origin) * inverse_dir
+        t1 = (max_aabb_point[i] - origin) * inverse_dir
+
+        if inverse_dir < 0:
+            temp = t0
+            t0 = t1
+            t1 = temp
+
+        if t0 > t_min:
+            t_min = t0
+
+        if t1 < t_max:
+            t_max = t1
+
+        if t_max <= t_min:
+            return False
+
+     # print(f't_max: {t_max}, t_min: {t_min}')
+
+    return True
+"""
+
+#
+# def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np.array) -> bool:
+#
+#     inv_dir: np.array = 1 / ray.direction
+#
+#     t_min = (min_aabb_point[0] - ray.origin[0]) * inv_dir[0]
+#     t_max = (max_aabb_point[0] - ray.origin[0]) * inv_dir[0]
+#
+#     t_y_min = (min_aabb_point[1] - ray.origin[1]) * inv_dir[1]
+#     t_y_max = (max_aabb_point[1] - ray.origin[1]) * inv_dir[1]
+#
+#     if t_min > t_y_max or t_y_min > t_max:
+#         return False
+#
+#     if t_y_min > t_min:
+#         t_min = t_y_min
+#
+#     if t_y_max < t_max:
+#         t_max = t_y_max
+#
+#     t_z_min = (min_aabb_point[2] - ray.origin[2]) * inv_dir[2]
+#     t_z_max = (max_aabb_point[2] - ray.origin[2]) * inv_dir[2]
+#
+#     if t_min > t_z_max or t_z_min > t_max:
+#         return False
+#
+#     # ...
+#
+#     return True
+
+
+def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np.array) -> bool:
+
+    ray_t_max = 1000
+    ray_t_min = -1000
+
+    for i in range(3):
+        inv_d = 1 / ray.direction[i]
+        origin = ray.origin[i]
+
+        t0 = (min_aabb_point[i] - origin) * inv_d
+        t1 = (max_aabb_point[i] - origin) * inv_d
+
+        if inv_d < 0:
+            t0, t1 = t1, t0
+
+        if t0 > ray_t_min:
+            ray_t_min = t0
+
+        if t1 < ray_t_max:
+            ray_t_max = t1
+
+        # print(f'inv_d: {inv_d} t0: {t0} t1: {t1} ray_t_min: {ray_t_min} ray_t_max: {ray_t_max}')
+
+        if ray_t_max < ray_t_min:
+            return False
 
     return True

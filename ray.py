@@ -10,3 +10,6 @@ class Ray:
 
     def normalize(self):
         self.direction = math_helper.get_normalized(self.direction)
+
+    def at(self, t: float):
+        return self.origin + (self.direction * t)
