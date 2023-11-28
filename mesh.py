@@ -4,6 +4,7 @@ import numpy as np
 from stl import mesh
 import math_helper
 from hit_record import HitRecord
+from material import Material
 from ray import Ray
 from ray_triangle_intersection_result import RayTriangleIntersectionResult
 from transform import Transform
@@ -23,18 +24,20 @@ class Mesh:
         self.ks: float = ks
         self.ke: float = ke
 
+        self.material = Material(ka, kd, diffuse_color, ks, specular_color, ke)
+
         self.aabb_smallest_point = np.array([0, 0, 0])
         self.aabb_greatest_point = np.array([0, 0, 0])
 
         self.transform = Transform()
 
-    def hit(self, ray: Ray, t_min: int, t_max: int) -> (bool, HitRecord):
+    def hit(self, ray: Ray, t_min: float, t_max: float) -> (bool, HitRecord):
 
         smallest_point_in_world = self.transform.apply_to_point(self.aabb_smallest_point)
         largest_point_in_world = self.transform.apply_to_point(self.aabb_greatest_point)
 
         if not math_helper.ray_aabb_intersection(ray, smallest_point_in_world, largest_point_in_world):
-            print("rejecting from AABB miss")
+            # print("rejecting from AABB miss")
             return False, None
 
         for face_index, face in enumerate(self.faces):
@@ -56,9 +59,9 @@ class Mesh:
             result: RayTriangleIntersectionResult = math_helper.ray_triangle_intersection(ray, world_space_vertices[0], world_space_vertices[1], world_space_vertices[2], t_min, t_max)
 
             if result.hit:
-                print('hit')
+                # print('hit')
                 point_hit = ray.at(result.t)
-                hit_record = HitRecord(point_hit, face_normal, result.t)
+                hit_record = HitRecord(point_hit, face_normal, result.t, self.material)
                 return True, hit_record
 
         return False, None

@@ -16,11 +16,11 @@ class Transform:
         self.matrix[1][3] = y
         self.matrix[2][3] = z
 
-    # def get_position(self) -> np.array:
-    #     x = self.matrix[0][3]
-    #     y = self.matrix[1][3]
-    #     z = self.matrix[2][3]
-    #     return np.array([x, y, z])
+    def get_position(self) -> np.array:
+        x = self.matrix[0][3]
+        y = self.matrix[1][3]
+        z = self.matrix[2][3]
+        return np.array([x, y, z])
 
     def set_rotation(self, x, y, z) -> None:
         # XYZ ordered rotation
