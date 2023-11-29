@@ -133,13 +133,14 @@ def thread_function(args: any) -> any:
             h: np.array = math_helper.get_normalized(normalized_light + normalized_direction)
 
             diffuse_component = material.kd * material.diffuse_color * max(0, math_helper.dot(eye_record.face_normal, point_to_light_vec))
-            specular_component = material.ks * material.specular_color * pow(math_helper.dot(eye_record.face_normal, h), material.p)
+            # specular_component = material.ks * material.specular_color * pow(math_helper.dot(eye_record.face_normal, h), material.p)
 
             # print(f'ambient component: {color}')
             # print(f'diffuse component: {diffuse_component}')
             # print(f'specular component: {specular_component}')
 
-            color += light.intensity * (diffuse_component + specular_component)
+            # color += light.intensity * (diffuse_component + specular_component)
+            color += light.intensity * (diffuse_component)
 
         return x, y, color * 255
 
