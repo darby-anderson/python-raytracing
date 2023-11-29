@@ -122,6 +122,8 @@ def thread_function(args: any) -> any:
         point_to_light_vec: np.array = light.transform.get_position() - point_hit
         distance_from_point_to_light: float = math_helper.magnitude(point_to_light_vec)
 
+        print(f'point_hit {str(point_hit)}, light position {str(light.transform.get_position())}')
+
         shadow_ray: Ray = Ray(point_hit, point_to_light_vec)
         scene_hit_before_light, shadow_record = scene.hit(shadow_ray, EPSILON, distance_from_point_to_light)
 
@@ -133,9 +135,9 @@ def thread_function(args: any) -> any:
             diffuse_component = material.kd * material.diffuse_color * max(0, math_helper.dot(eye_record.face_normal, point_to_light_vec))
             specular_component = material.ks * material.specular_color * pow(math_helper.dot(eye_record.face_normal, h), material.p)
 
-            print(f'ambient component: {color}')
-            print(f'diffuse component: {diffuse_component}')
-            print(f'specular component: {specular_component}')
+            # print(f'ambient component: {color}')
+            # print(f'diffuse component: {diffuse_component}')
+            # print(f'specular component: {specular_component}')
 
             color += light.intensity * (diffuse_component + specular_component)
 

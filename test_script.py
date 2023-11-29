@@ -23,8 +23,8 @@ if __name__ == '__main__':
     # mesh.transform.set_rotation(-15, 0, 200)
     mesh.transform.set_position(0, 5, 0)
 
-    mesh2 = Mesh.from_stl("unit_sphere.stl", np.array([0.0, 1.0, 0.0]), \
-                         np.array([1.0, 1.0, 1.0]), 1.0, 1.0, 0.2, 100)
+    mesh2 = Mesh.from_stl("suzanne.stl", np.array([0.0, 1.0, 0.0]), \
+                         np.array([1.0, 1.0, 1.0]), 0.05, 1.0, 0.0, 100)
     # mesh.transform.set_rotation(-15, 0, 200)
     mesh2.transform.set_position(0, 5, 0)
 
