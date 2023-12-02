@@ -9,7 +9,7 @@ from light import PointLight
 
 
 if __name__ == '__main__':
-    screen = Screen(200, 200)
+    screen = Screen(100, 100)
 
     camera = OrthoCamera(-1.0, 1.0, -1.0, 1.0, 1, 60)
     # camera = PerspectiveCamera(-1.0, 1.0, -1.0, 1.0, 1, 60)
@@ -19,8 +19,8 @@ if __name__ == '__main__':
     camera.transform.set_position(0, 0, 0)
 
     mesh = Mesh.from_stl("unit_sphere.stl", np.array([1.0, 0.0, 1.0]),\
-        np.array([1.0, 1.0, 1.0]),0.0,1.0,1.0,100.0)
-    mesh.transform.set_rotation(0, 0, 0)
+        np.array([1.0, 1.0, 1.0]),0.0,1.0,0.2,100.0)
+    mesh.transform.set_rotation(0, 45, 45)
     mesh.transform.set_position(0, 3, 0)
 
     # mesh2 = Mesh.from_stl("unit_sphere.stl", np.array([0.0, 1.0, 0.0]), \

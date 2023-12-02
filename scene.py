@@ -17,7 +17,7 @@ class Scene:
         for mesh in self.meshes:
             was_hit, hit_record = mesh.hit(ray, t_min, t_max)
 
-            if was_hit and hit_record.t < lowest_t:
+            if was_hit and hit_record.intersection_result.t < lowest_t:
                 hit_an_object = True
                 closest_obj_hit_record = hit_record
 

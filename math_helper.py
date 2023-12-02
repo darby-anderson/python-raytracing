@@ -166,67 +166,6 @@ def ray_triangle_intersection(ray: Ray, a_point: np.array, b_point: np.array, c_
 
     return RayTriangleIntersectionResult(True, t, theta, beta)
 
-"""
-def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np.array) -> bool:
-    t_min = float('-inf')
-    t_max = float('inf')
-
-    for i in range(3):
-        inverse_dir = 1.0 / ray.direction[i]
-        origin = ray.origin[i]
-
-        t0 = (min_aabb_point[i] - origin) * inverse_dir
-        t1 = (max_aabb_point[i] - origin) * inverse_dir
-
-        if inverse_dir < 0:
-            temp = t0
-            t0 = t1
-            t1 = temp
-
-        if t0 > t_min:
-            t_min = t0
-
-        if t1 < t_max:
-            t_max = t1
-
-        if t_max <= t_min:
-            return False
-
-     # print(f't_max: {t_max}, t_min: {t_min}')
-
-    return True
-"""
-
-#
-# def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np.array) -> bool:
-#
-#     inv_dir: np.array = 1 / ray.direction
-#
-#     t_min = (min_aabb_point[0] - ray.origin[0]) * inv_dir[0]
-#     t_max = (max_aabb_point[0] - ray.origin[0]) * inv_dir[0]
-#
-#     t_y_min = (min_aabb_point[1] - ray.origin[1]) * inv_dir[1]
-#     t_y_max = (max_aabb_point[1] - ray.origin[1]) * inv_dir[1]
-#
-#     if t_min > t_y_max or t_y_min > t_max:
-#         return False
-#
-#     if t_y_min > t_min:
-#         t_min = t_y_min
-#
-#     if t_y_max < t_max:
-#         t_max = t_y_max
-#
-#     t_z_min = (min_aabb_point[2] - ray.origin[2]) * inv_dir[2]
-#     t_z_max = (max_aabb_point[2] - ray.origin[2]) * inv_dir[2]
-#
-#     if t_min > t_z_max or t_z_min > t_max:
-#         return False
-#
-#     # ...
-#
-#     return True
-
 
 def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np.array) -> bool:
 

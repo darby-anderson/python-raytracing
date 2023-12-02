@@ -16,6 +16,7 @@ class Mesh:
         self.faces = []
         self.normals = []
         self.verts = []
+        self.vertex_normals = []
 
         self.diffuse_color: np.array = diffuse_color
         self.specular_color: np.array = specular_color
@@ -58,17 +59,24 @@ class Mesh:
             # let's try to do this in camera space to avoid ray -> world space complications
 
             world_space_vertices: list = []
+            world_space_normals: list = []
 
             for index in face:
                 w_vert = self.transform.apply_to_point(self.verts[index])
                 world_space_vertices.append(w_vert)
 
+                w_vert_normal = self.transform.apply_to_normal(self.vertex_normals[index])
+                world_space_normals.append(w_vert_normal)
+
             result: RayTriangleIntersectionResult = math_helper.ray_triangle_intersection(ray, world_space_vertices[0], world_space_vertices[1], world_space_vertices[2], t_min, t_max)
+
+            normal_w: np.array = math_helper.get_normalized(world_space_normals[0] * result.alpha + world_space_normals[1] * result.beta +
+                                           world_space_normals[2] * result.theta)
 
             if result.hit:
                 # print('hit')
                 point_hit = ray.at(result.t)
-                hit_record = HitRecord(point_hit, face_normal_world, result.t, self.material)
+                hit_record = HitRecord(point_hit, face_normal_world, result, normal_w, self.material)
                 return True, hit_record
 
         return False, None
@@ -114,7 +122,8 @@ class Mesh:
         self.aabb_greatest_point_world = aabb_greatest_point
 
     @staticmethod
-    def from_stl(stl_path, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float, ke: float):
+    def from_stl(stl_path, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float,
+                 ke: float):
         my_mesh: Mesh = Mesh(diffuse_color, specular_color, ka, kd, ks, ke)
         stl_mesh: mesh.Mesh = mesh.Mesh.from_file(stl_path)
 
@@ -124,9 +133,12 @@ class Mesh:
         temp_faces = np.zeros((num_faces, 3), dtype=int)
         temp_normals = np.zeros((num_faces, 3))
 
+        vert_normal_dict: dict[int, list[np.array]] = {}
+
         for face_index, face in enumerate(stl_mesh.points):
 
-            temp_normals[face_index] = stl_mesh.normals[face_index]
+            face_normal = stl_mesh.normals[face_index]
+            temp_normals[face_index] = face_normal
 
             verts = [np.array(face[0:3]), np.array(face[3:6]), np.array(face[6:9])]
 
@@ -137,18 +149,29 @@ class Mesh:
                 for existing_index, existing_vert in enumerate(vert_list):
                     if math_helper.check_if_vectors_identical(existing_vert, vertex):
                         index = existing_index
+                        vert_normal_dict[index].append(np.array(face_normal))
                         break
 
                 if index == -1:  # get new index if not found
                     index = len(vert_list)
                     vert_list.append(vertex.tolist())
+                    vert_normal_dict[index] = [np.array(face_normal)]
 
                 temp_faces[face_index][vert_index] = index
 
+        vert_normals = []
+
+        for index, vert in enumerate(vert_list):
+            normals = vert_normal_dict[index]
+            normal_sum = np.array([0.0, 0.0, 0.0])
+            for normal in normals:
+                normal_sum += normal
+
+            vert_normals.append(math_helper.get_normalized(normal_sum))
+
+        # copy vertices from vert_list
         my_mesh.verts = vert_list
-
-        #  my_mesh.calc_aabb_box()
-
+        my_mesh.vertex_normals = vert_normals
         my_mesh.faces = temp_faces.tolist()
         my_mesh.normals = temp_normals.tolist()
 
