@@ -26,26 +26,33 @@ class Mesh:
 
         self.material = Material(ka, kd, diffuse_color, ks, specular_color, ke)
 
-        self.aabb_smallest_point = np.array([0, 0, 0])
-        self.aabb_greatest_point = np.array([0, 0, 0])
+        self.aabb_smallest_point_world = np.array([0, 0, 0])
+        self.aabb_greatest_point_world = np.array([0, 0, 0])
 
         self.transform = Transform()
 
+        self.calced_aabb_box = False
+
     def hit(self, ray: Ray, t_min: float, t_max: float) -> (bool, HitRecord):
 
-        smallest_point_in_world = self.transform.apply_to_point(self.aabb_smallest_point)
-        largest_point_in_world = self.transform.apply_to_point(self.aabb_greatest_point)
+        if not self.calced_aabb_box:
+            self.calc_aabb_box()
+            self.calced_aabb_box = True
 
-        if not math_helper.ray_aabb_intersection(ray, smallest_point_in_world, largest_point_in_world):
+        if not math_helper.ray_aabb_intersection(ray, self.aabb_smallest_point_world, self.aabb_greatest_point_world):
             # print("rejecting from AABB miss")
             return False, None
 
+        # print("got here")
+
         for face_index, face in enumerate(self.faces):
             face_normal = self.normals[face_index]
+            face_normal_world = math_helper.get_normalized(self.transform.apply_to_normal(face_normal))
 
             # check if hitting back of face
-            if math_helper.dot(face_normal, ray.direction) > 0:
+            if math_helper.dot(face_normal_world, ray.direction) > 0:
                 # hitting the back of the face
+                # print("rejecting from back face")
                 continue
 
             # let's try to do this in camera space to avoid ray -> world space complications
@@ -61,10 +68,50 @@ class Mesh:
             if result.hit:
                 # print('hit')
                 point_hit = ray.at(result.t)
-                hit_record = HitRecord(point_hit, face_normal, result.t, self.material)
+                hit_record = HitRecord(point_hit, face_normal_world, result.t, self.material)
                 return True, hit_record
 
         return False, None
+
+    def calc_aabb_box(self):
+        large_num: float = 100000.0
+        small_num: float = -100000.0
+        aabb_smallest_point: np.array = np.array([large_num, large_num, large_num])
+        aabb_greatest_point: np.array = np.array([small_num, small_num, small_num])
+
+        world_space_vertices: list = []
+        for vert in self.verts:
+            nw_vert = self.transform.apply_to_point(vert)
+            world_space_vertices.append(nw_vert)
+            print(f'original vert: {vert} nw_vert: {nw_vert}')
+
+        for w_vert in world_space_vertices:
+            # SMALLEST
+            if w_vert[0] < aabb_smallest_point[0]:
+                aabb_smallest_point[0] = w_vert[0]
+
+            if w_vert[1] < aabb_smallest_point[1]:
+                aabb_smallest_point[1] = w_vert[1]
+
+            if w_vert[2] < aabb_smallest_point[2]:
+                aabb_smallest_point[2] = w_vert[2]
+
+            # GREATEST
+            if w_vert[0] > aabb_greatest_point[0]:
+                aabb_greatest_point[0] = w_vert[0]
+
+            if w_vert[1] > aabb_greatest_point[1]:
+                aabb_greatest_point[1] = w_vert[1]
+
+            if w_vert[2] > aabb_greatest_point[2]:
+                aabb_greatest_point[2] = w_vert[2]
+
+        print("smallest point: " + str(aabb_smallest_point))
+        print("greatest point: " + str(aabb_greatest_point))
+
+        # copy vertices from vert_list
+        self.aabb_smallest_point_world = aabb_smallest_point
+        self.aabb_greatest_point_world = aabb_greatest_point
 
     @staticmethod
     def from_stl(stl_path, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float, ke: float):
@@ -98,39 +145,10 @@ class Mesh:
 
                 temp_faces[face_index][vert_index] = index
 
-        large_num: float = 100000.0
-        small_num: float = -100000.0
-        aabb_smallest_point: np.array = np.array([large_num, large_num, large_num])
-        aabb_greatest_point: np.array = np.array([small_num, small_num, small_num])
-
-        for vert in vert_list:
-            # SMALLEST
-            if vert[0] < aabb_smallest_point[0]:
-                aabb_smallest_point[0] = vert[0]
-
-            if vert[1] < aabb_smallest_point[1]:
-                aabb_smallest_point[1] = vert[1]
-
-            if vert[2] < aabb_smallest_point[2]:
-                aabb_smallest_point[2] = vert[2]
-
-            # GREATEST
-            if vert[0] > aabb_greatest_point[0]:
-                aabb_greatest_point[0] = vert[0]
-
-            if vert[1] > aabb_greatest_point[1]:
-                aabb_greatest_point[1] = vert[1]
-
-            if vert[2] > aabb_greatest_point[2]:
-                aabb_greatest_point[2] = vert[2]
-
-        print("smallest point: " + str(aabb_smallest_point))
-        print("greatest point: " + str(aabb_greatest_point))
-
-        # copy vertices from vert_list
-        my_mesh.aabb_smallest_point = aabb_smallest_point
-        my_mesh.aabb_greatest_point = aabb_greatest_point
         my_mesh.verts = vert_list
+
+        #  my_mesh.calc_aabb_box()
+
         my_mesh.faces = temp_faces.tolist()
         my_mesh.normals = temp_normals.tolist()
 

@@ -234,7 +234,11 @@ def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np
     ray_t_min = -1000
 
     for i in range(3):
-        inv_d = 1 / ray.direction[i]
+        if ray.direction[i] == 0:
+            inv_d = 100000
+        else:
+            inv_d = 1 / ray.direction[i]
+
         origin = ray.origin[i]
 
         t0 = (min_aabb_point[i] - origin) * inv_d

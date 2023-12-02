@@ -54,41 +54,6 @@ class Renderer:
 
                 image_buffer_l[x, y] = color
 
-        """
-        for x in range(0, self.screen.width):
-
-            print(f' {str(x / self.screen.width)}% finished.')
-
-            for y in range(0, self.screen.height):
-                # print(f' {str(x / self.screen.width)}% finished. x: {x}, y {y}')
-                curr_ray: Ray = self.camera.get_cam_space_ray_at_pixel(x, y, self.screen.width, self.screen.height, 1)
-
-                # print(f"ray for x: {x} y: {y} is ray with dir: {str(curr_ray.direction)} at origin: {str(curr_ray.origin)}")
-
-                # check every triangle in scene
-                for mesh in self.meshes:
-                    for face_index, face in enumerate(mesh.faces):
-                        face_normal = mesh.normals[face_index]
-
-                        # let's try to do this in camera space to avoid ray -> world space complications
-
-                        world_space_vertices: list = []
-                        camera_space_vertices: list = []
-
-                        for index in face:
-                            w_vert = mesh.transform.apply_to_point(mesh.verts[index])
-                            world_space_vertices.append(w_vert)
-
-                            c_vert = self.camera.project_point(w_vert)
-                            camera_space_vertices.append(c_vert)
-                            # print(f"cs vert: {str(c_vert)}")
-
-                        if math_helper.ray_triangle_intersection(curr_ray, camera_space_vertices[0], camera_space_vertices[1], camera_space_vertices[2],0, 100):
-                            print("hit!")
-                            print(f"ray for x: {x} y: {y} is ray with dir: {str(curr_ray.direction)} at origin: {str(curr_ray.origin)}")
-                            image_buffer_l[x, y] = mesh.diffuse_color * 255
-            """
-
         print("drawing buffer")
         self.screen.draw(image_buffer_l)
 
@@ -113,34 +78,40 @@ def thread_function(args: any) -> any:
     if scene_hit_from_eye:
 
         material: Material = eye_record.material
-        point_hit: np.array = world_space_ray.at(eye_record.t)
+        point_hit: np.array = eye_record.point_hit
 
         # add ambient color
         color = eye_record.material.ka * np.array(ambient_light)
 
         # check if hit by light, if so add diffuse and specular color
-        point_to_light_vec: np.array = light.transform.get_position() - point_hit
+        light_direction: np.array = light.transform.apply_to_point(np.array([0, 0, 0]))
+        point_to_light_vec: np.array = math_helper.get_normalized(light_direction)
+        # point_to_light_vec: np.array = math_helper.get_normalized(light_position - point_hit)
+        # point_to_light_vec: np.array = math_helper.get_normalized(light_position)
         distance_from_point_to_light: float = math_helper.magnitude(point_to_light_vec)
 
-        print(f'point_hit {str(point_hit)}, light position {str(light.transform.get_position())}')
+        # print(f'point_hit {str(point_hit)}, light position {str(light_position)}, point_to_light_vec {str(point_to_light_vec)}')
 
         shadow_ray: Ray = Ray(point_hit, point_to_light_vec)
-        scene_hit_before_light, shadow_record = scene.hit(shadow_ray, EPSILON, distance_from_point_to_light)
+        scene_hit_before_light, shadow_record = scene.hit(shadow_ray, EPSILON, 1000)
 
         if not scene_hit_before_light:
-            normalized_light: np.array = math_helper.get_normalized(point_to_light_vec)
-            normalized_direction: np.array = math_helper.get_normalized(-world_space_ray.direction)
-            h: np.array = math_helper.get_normalized(normalized_light + normalized_direction)
+            # normalized_light: np.array = math_helper.get_normalized(point_to_light_vec)
+            normalized_neg_direction: np.array = math_helper.get_normalized(-world_space_ray.direction)
+            h: np.array = math_helper.get_normalized(point_to_light_vec + normalized_neg_direction)
+
+            # print(f'face_normal: {eye_record.face_normal}, point_to_light_vec: {point_to_light_vec}, fn dot ptlv: {math_helper.dot(eye_record.face_normal, point_to_light_vec)}')
+            # print(f'point_hit: {point_hit} face_normal: {eye_record.face_normal}, point_to_light_vec: {point_to_light_vec} normalized_neg_dir: {normalized_neg_direction} h: {h}, fn dot h: {math_helper.dot(eye_record.face_normal, h)}')
 
             diffuse_component = material.kd * material.diffuse_color * max(0, math_helper.dot(eye_record.face_normal, point_to_light_vec))
-            # specular_component = material.ks * material.specular_color * pow(math_helper.dot(eye_record.face_normal, h), material.p)
+            specular_component = material.ks * material.specular_color * pow(max(0, math_helper.dot(eye_record.face_normal, h)), material.p)
 
             # print(f'ambient component: {color}')
             # print(f'diffuse component: {diffuse_component}')
             # print(f'specular component: {specular_component}')
 
-            # color += light.intensity * (diffuse_component + specular_component)
-            color += light.intensity * (diffuse_component)
+            color += light.intensity * (diffuse_component + specular_component)
+            # color += light.intensity * (diffuse_component)
 
         return x, y, color * 255
 
