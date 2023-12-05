@@ -12,7 +12,7 @@ from transform import Transform
 
 class Mesh:
 
-    def __init__(self, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float, ke: float):
+    def __init__(self, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float, ke: float, km: float):
         self.faces = []
         self.normals = []
         self.verts = []
@@ -24,8 +24,9 @@ class Mesh:
         self.kd: float = kd
         self.ks: float = ks
         self.ke: float = ke
+        self.km: float = km
 
-        self.material = Material(ka, kd, diffuse_color, ks, specular_color, ke)
+        self.material = Material(ka, kd, diffuse_color, ks, specular_color, ke, km)
 
         self.aabb_smallest_point_world = np.array([0, 0, 0])
         self.aabb_greatest_point_world = np.array([0, 0, 0])
@@ -123,8 +124,8 @@ class Mesh:
 
     @staticmethod
     def from_stl(stl_path, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float,
-                 ke: float):
-        my_mesh: Mesh = Mesh(diffuse_color, specular_color, ka, kd, ks, ke)
+                 ke: float, km: float):
+        my_mesh: Mesh = Mesh(diffuse_color, specular_color, ka, kd, ks, ke, km)
         stl_mesh: mesh.Mesh = mesh.Mesh.from_file(stl_path)
 
         num_faces = len(stl_mesh.points)
