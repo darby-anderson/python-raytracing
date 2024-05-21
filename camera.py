@@ -38,6 +38,9 @@ class OrthoCamera:
         direction = self.transform.apply_inverse_to_normal(ray.direction)
         origin = self.transform.apply_inverse_to_point(ray.origin)
 
+        # direction = self.transform.apply_to_normal(ray.direction)
+        # origin = self.transform.apply_to_point(ray.origin)
+
         # direction = self.inverse_project_point(ray.direction)
         # origin = self.inverse_project_point(ray.origin)
 

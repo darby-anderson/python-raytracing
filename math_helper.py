@@ -167,16 +167,19 @@ def ray_triangle_intersection(ray: Ray, a_point: np.array, b_point: np.array, c_
     return RayTriangleIntersectionResult(True, t, theta, beta)
 
 
+EPSILON = 0.00001
+
 def ray_aabb_intersection(ray: Ray, min_aabb_point: np.array, max_aabb_point: np.array) -> bool:
 
     ray_t_max = 1000
     ray_t_min = -1000
 
     for i in range(3):
-        if ray.direction[i] == 0:
-            inv_d = 100000
+        if abs(ray.direction[i]) < EPSILON:
+            inv_d = 100000.0
         else:
-            inv_d = 1 / ray.direction[i]
+            # print(ray.direction)
+            inv_d = 1.0 / ray.direction[i]
 
         origin = ray.origin[i]
 

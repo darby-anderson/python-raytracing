@@ -20,5 +20,6 @@ class Scene:
             if was_hit and hit_record.intersection_result.t < lowest_t:
                 hit_an_object = True
                 closest_obj_hit_record = hit_record
+                lowest_t = hit_record.intersection_result.t
 
         return hit_an_object, closest_obj_hit_record

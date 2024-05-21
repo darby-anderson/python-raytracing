@@ -12,7 +12,7 @@ from transform import Transform
 
 class Mesh:
 
-    def __init__(self, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float, ke: float, km: float):
+    def __init__(self, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float, ke: float, km: float, hard_edges: bool):
         self.faces = []
         self.normals = []
         self.verts = []
@@ -25,6 +25,8 @@ class Mesh:
         self.ks: float = ks
         self.ke: float = ke
         self.km: float = km
+
+        self.hard_edges = hard_edges
 
         self.material = Material(ka, kd, diffuse_color, ks, specular_color, ke, km)
 
@@ -46,6 +48,10 @@ class Mesh:
             return False, None
 
         # print("got here")
+
+        hit_record = None
+        face_hit: bool = False
+        lowest_t: float = t_max + 1
 
         for face_index, face in enumerate(self.faces):
             face_normal = self.normals[face_index]
@@ -69,18 +75,23 @@ class Mesh:
                 w_vert_normal = self.transform.apply_to_normal(self.vertex_normals[index])
                 world_space_normals.append(w_vert_normal)
 
+            # print(f'w_s_verts: {str(world_space_vertices)}')
+
             result: RayTriangleIntersectionResult = math_helper.ray_triangle_intersection(ray, world_space_vertices[0], world_space_vertices[1], world_space_vertices[2], t_min, t_max)
 
-            normal_w: np.array = math_helper.get_normalized(world_space_normals[0] * result.alpha + world_space_normals[1] * result.beta +
-                                           world_space_normals[2] * result.theta)
+            if self.hard_edges:
+                normal_w = face_normal_world
+            else:
+                normal_w: np.array = math_helper.get_normalized(world_space_normals[0] * result.alpha + world_space_normals[1] * result.beta +
+                                               world_space_normals[2] * result.theta)
 
-            if result.hit:
-                # print('hit')
+            if result.hit and result.t < lowest_t:
+                lowest_t = result.t
+                face_hit = True
                 point_hit = ray.at(result.t)
                 hit_record = HitRecord(point_hit, face_normal_world, result, normal_w, self.material)
-                return True, hit_record
 
-        return False, None
+        return face_hit, hit_record
 
     def calc_aabb_box(self):
         large_num: float = 100000.0
@@ -92,7 +103,7 @@ class Mesh:
         for vert in self.verts:
             nw_vert = self.transform.apply_to_point(vert)
             world_space_vertices.append(nw_vert)
-            print(f'original vert: {vert} nw_vert: {nw_vert}')
+            # print(f'original vert: {vert} nw_vert: {nw_vert}')
 
         for w_vert in world_space_vertices:
             # SMALLEST
@@ -124,8 +135,8 @@ class Mesh:
 
     @staticmethod
     def from_stl(stl_path, diffuse_color: np.array, specular_color: np.array, ka: float, kd: float, ks: float,
-                 ke: float, km: float):
-        my_mesh: Mesh = Mesh(diffuse_color, specular_color, ka, kd, ks, ke, km)
+                 ke: float, km: float, hard_edges: bool):
+        my_mesh: Mesh = Mesh(diffuse_color, specular_color, ka, kd, ks, ke, km, hard_edges)
         stl_mesh: mesh.Mesh = mesh.Mesh.from_file(stl_path)
 
         num_faces = len(stl_mesh.points)

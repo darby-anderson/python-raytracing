@@ -1,5 +1,7 @@
 import concurrent.futures
+import datetime
 import logging
+import threading
 
 from light import PointLight
 from material import Material
@@ -27,10 +29,22 @@ class Renderer:
 
         self.image_buffer: np.array = np.zeros(1)
 
+        self.increment_pixel_lock = threading.Lock()
+        self.pixels_completed: float = 0.0
+
     def set_image_buffer(self, x, y, color):
         self.image_buffer[x, y] = color
 
+    def increment_pixels_finished(self):
+        with self.increment_pixel_lock:
+            self.pixels_completed += 1.0
+            if self.pixels_completed % 500 == 0:
+                total_pixels = self.screen.width * self.screen.height
+                print(str(100.0 * (self.pixels_completed / total_pixels)) + "% complete")
+
     def render(self, shading, bg_color: list, ambient_light) -> None:
+
+        render_start_time = datetime.datetime.now()
 
         image_buffer_l: np.array = np.full((self.screen.width, self.screen.height, 3), bg_color)
         # self.image_buffer: np.array = np.full((self.screen.width, self.screen.height, 3), bg_color)
@@ -59,6 +73,17 @@ class Renderer:
         print("drawing buffer")
         self.screen.draw(image_buffer_l)
 
+        self.screen.do_capture()
+
+        render_end_time = datetime.datetime.now()
+
+        render_duration: datetime.timedelta = render_end_time - render_start_time
+        total_seconds = render_duration.total_seconds()
+        minutes, seconds = divmod(total_seconds, 60)
+
+        print(f'Rendering took {minutes}m and {seconds}s')
+
+
     def ray_color(self, ray_w: Ray, ambient_light: np.array, recursion_depth: int, max_recursion_depth: int) -> np.array:
 
         if recursion_depth == max_recursion_depth:
@@ -70,7 +95,10 @@ class Renderer:
         scene_hit_from_eye, eye_record = scene.hit(ray_w, 0, 100)
 
         if not scene_hit_from_eye:
-            return np.array([0, 1, 0])
+            #if recursion_depth == 0:
+            return np.array([99 / 255.0, 215 / 255.0, 228 / 255.0])
+            #else:
+            #    return np.array([0, 0, 0])
 
         normal_w: np.array = eye_record.normal_w
 
@@ -121,7 +149,7 @@ class Renderer:
             reflection_ray: Ray = Ray(point_hit, reflection_direction)
             color += reflection_coefficient * self.ray_color(reflection_ray, ambient_light, recursion_depth + 1, max_recursion_depth)
 
-        return color
+        return np.clip(color, 0, 1)
 
 
 def thread_function(args: any) -> any:
@@ -132,10 +160,13 @@ def thread_function(args: any) -> any:
     renderer = args[3]
 
     curr_ray: Ray = renderer.camera.get_cam_space_ray_at_pixel(x, y, renderer.screen.width, renderer.screen.height, 1)
-    world_space_ray: Ray = renderer.camera.project_ray(curr_ray)
+    world_space_ray: Ray = renderer.camera.inverse_project_ray(curr_ray)
 
-    color: np.array = renderer.ray_color(world_space_ray, ambient_light, 0, 2)
+    # print(f'dir curr_ray {str(curr_ray.direction)}, world_space_ray {str(world_space_ray.direction)}')
+    # print(f'origin curr_ray {str(curr_ray.origin)}, world_space_ray {str(world_space_ray.origin)}')
+
+    color: np.array = renderer.ray_color(world_space_ray, ambient_light, 0, 3)
+
+    renderer.increment_pixels_finished()
 
     return x, y, np.clip(color, 0, 1) * 255
-
-    # return x, y, None

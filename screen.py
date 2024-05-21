@@ -1,3 +1,6 @@
+import datetime
+import string
+
 import numpy as np
 import pygame
 pygame.init()
@@ -14,6 +17,12 @@ class Screen:
     def ratio(self):
         return self.width / self.height
 
+    def do_capture(self):
+        file_name: string = f'{str(datetime.datetime.now().time())[0:5]}.png'
+        file_name = file_name.replace(":", "h")
+        print(file_name)
+        pygame.image.save(self.surface, file_name)
+
     def draw(self, buffer):
         if buffer.shape != (self.width, self.height, 3):
             raise Exception("Color buffer of wrong shape")
@@ -25,11 +34,11 @@ class Screen:
         pygame.display.flip()
 
     def show(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+        # running = True
+        # while running:
+        #     for event in pygame.event.get():
+        #         if event.type == pygame.QUIT:
+        #             running = False
 
         pygame.quit()
 
